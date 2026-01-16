@@ -2,6 +2,8 @@ import re
 from tools.calculator import calculate
 from tools.time_tool import current_time
 from llm.ollama_llm import OllamaLLM
+from agent.memory import ConversationMemory
+
 
 
 def decide_tool(user_input: str):
@@ -57,20 +59,29 @@ def is_balanced(expression: str) -> bool:
 class Agent:
     def __init__(self):
         self.llm = OllamaLLM()
+        self.memory = ConversationMemory(max_turns=5)
 
     def run(self, user_input: str) -> str:
+        self.memory.add_user(user_input)
+    
         tool = decide_tool(user_input)
-
-        if tool is None:
-            return self.llm.generate(user_input).strip()
-
+    
         if tool == "calculator":
-            return self.run_calculator(user_input)
-
+            response = self.run_calculator(user_input)
+            self.memory.add_assistant(response)
+            return response
+    
         if tool == "time":
-            return self.run_time()
+            response = self.run_time()
+            self.memory.add_assistant(response)
+            return response
+    
+        prompt = self.build_prompt(user_input)
+        response = self.llm.generate(prompt).strip()
+    
+        self.memory.add_assistant(response)
+        return response
 
-        return "Unsupported tool requested."
 
     def run_calculator(self, user_input: str) -> str:
       try:
@@ -86,3 +97,16 @@ class Agent:
 
     def run_time(self) -> str:
         return f"The current time is {current_time()}."
+    
+    
+    def build_prompt(self, user_input: str) -> str:
+        context = ""
+    
+        for msg in self.memory.get_context():
+            role = msg["role"].capitalize()
+            context += f"{role}: {msg['content']}\n"
+    
+        context += f"User: {user_input}\nAssistant:"
+    
+        return context
+    
