@@ -2,8 +2,15 @@ from agent.agent import Agent
 
 agent = Agent()
 
-print(agent.run("My name is Yashraj"))
-print(agent.run("What did I just tell you my name was?"))
-print(agent.run("What is 25 * (3 + 7)?"))
-print(agent.run("Do you remember my name?"))
-print(agent.run("What's the total after adding 10 to 250?"))
+print(agent.run("Hello"))
+print(agent.run("My name is Yash"))
+print(agent.run("What is my name?"))
+
+print("\n--- MEMORY ---")
+print(agent.run("show memory"))
+
+print("\n--- RESET ---")
+print(agent.run("reset session"))
+
+print("\n--- AFTER RESET ---")
+print(agent.run("What is my name?"))
