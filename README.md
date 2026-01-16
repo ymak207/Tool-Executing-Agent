@@ -120,3 +120,126 @@ ollama run llama3
 python test_agent.py
 
 ---
+
+Conversational Memory & Session Control (Extension)
+
+---
+
+This phase extends the Tool-Executing Agent with explicit, bounded conversational memory, enabling multi-turn reasoning and context continuity while remaining CPU-safe and deterministic.
+
+All changes were implemented incrementally in the same repository.
+
+---
+
+🔖 Commit 1 — Bounded Conversational Memory
+
+feat(agent): add bounded conversational memory with context injection
+
+---
+
+What Was Added
+
+Short-term conversational memory (last N interactions)
+
+Automatic context injection into LLM prompts
+
+Memory trimming to prevent context explosion
+
+Why This Matters
+
+Stateless agents fail in real systems.
+
+This change enables:
+
+Follow-up questions
+
+Contextual reasoning
+
+Tool usage across turns
+
+Without:
+
+LangChain
+
+Vector DBs
+
+Heavy abstractions
+
+---
+
+How It Works (High Level)
+
+Each user/assistant exchange is stored in memory
+
+Memory is capped (FIFO eviction)
+
+On each run:
+
+Memory is formatted
+
+Injected before the user prompt
+
+Sent to the local LLM (Ollama)
+
+Result
+
+The agent can now handle conversations like:
+
+User: What is 25 \* (3 + 7)?
+User: Add 10 to that
+
+---
+
+🔖 Commit 2 — Memory Reset & Inspection
+feat(agent): added memory reset
+
+What Was Added
+
+Explicit memory reset capability
+
+Deterministic session control
+
+Ability to start fresh conversations safely
+
+Why This Matters
+
+In production systems:
+
+Sessions must be resettable
+
+Context leakage is dangerous
+
+Debugging requires memory visibility
+
+This commit prepares the agent for:
+
+Multi-user systems
+
+Long-running services
+
+Enterprise safety requirements
+
+Example Use Cases
+
+Restart a conversation cleanly
+
+Prevent old context influencing new tasks
+
+Debug agent behavior deterministically
+
+---
+
+🧪 How to Test this extension
+python test_agent.py
+
+Suggested flow:
+
+Ask a question
+
+Ask a follow-up that depends on prior context
+
+Reset memory
+
+Ask again and verify clean behavior
+
+---
